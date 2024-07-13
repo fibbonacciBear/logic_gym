@@ -1,0 +1,144 @@
+Task Description: You are given a problem description and a question. The task is to: 
+1) define all the predicates in the problem
+2) parse the problem into logic rules based on the defined predicates
+3) write all the facts mentioned in the problem, also identify all the variables
+4) parse the question into the logic form as goals
+
+Make sure not to generate English explanations at the end. 
+Do not create markdown. 
+Make sure to balance parenthesis. 
+Make sure not to confuse variables and predicates
+
+------
+Problem:
+Each jompus is fruity. Every jompus is a wumpus. Every wumpus is not transparent. Wumpuses are tumpuses. Tumpuses are mean. Tumpuses are vumpuses. Every vumpus is cold. Each vumpus is a yumpus. Yumpuses are orange. Yumpuses are numpuses. Numpuses are dull. Each numpus is a dumpus. Every dumpus is not shy. Impuses are shy. Dumpuses are rompuses. Each rompus is liquid. Rompuses are zumpuses. Alex is a tumpus.
+Question:
+True or false: Alex is not shy.
+###
+
+# Predicates
+class Jompus(Relation):
+    "Does x belong to Jompus?"
+    def __init__(self, *args):  # seq of args
+        Relation.__init__(self, *args)
+
+class Fruity(Relation):
+    "Is x Fruity?"
+    def __init__(self, *args):  # seq of args
+        Relation.__init__(self, *args)
+
+class Wumpus(Relation): 
+    "Does x belong to Wumpus?"
+    def __init__(self, *args):  # seq of args
+        Relation.__init__(self, *args)
+
+class Transparent(Relation): 
+    "Is x transparent?"
+    def __init__(self, *args):  # seq of args
+        Relation.__init__(self, *args)
+
+class Tumpuses(Relation): 
+    "Does x belong to Tumpuses?"
+    def __init__(self, *args):  # seq of args
+        Relation.__init__(self, *args)
+
+class Mean(Relation): 
+    "Is x mean?"
+    def __init__(self, *args):  # seq of args
+        Relation.__init__(self, *args)
+
+class Vumpuses(Relation): 
+    "Does x belong to Vumpuses?"
+    def __init__(self, *args):  # seq of args
+        Relation.__init__(self, *args)
+
+class Cold(Relation): 
+    "Is x cold?"
+    def __init__(self, *args):  # seq of args
+        Relation.__init__(self, *args)
+
+class Yumpus(Relation): 
+    "Does x belong to Yumpus?"
+    def __init__(self, *args):  # seq of args
+        Relation.__init__(self, *args)
+
+class Orange(Relation): 
+    "Is x orange?"
+    def __init__(self, *args):  # seq of args
+        Relation.__init__(self, *args)
+
+class Numpus(Relation): 
+    "Does x belong to Numpus?"
+    def __init__(self, *args):  # seq of args
+        Relation.__init__(self, *args)
+
+class Dull(Relation): 
+    "Is x dull?"
+    def __init__(self, *args):  # seq of args
+        Relation.__init__(self, *args)
+
+class Dumpus(Relation): 
+    "Does x belong to Dumpus?"
+    def __init__(self, *args):  # seq of args
+        Relation.__init__(self, *args)
+
+class Shy(Relation): 
+    "Is x shy?"
+    def __init__(self, *args):  # seq of args
+        Relation.__init__(self, *args)
+
+class Impuses(Relation): 
+    "Does x belong to Impuses?"
+    def __init__(self, *args):  # seq of args
+        Relation.__init__(self, *args)
+
+class Rompus(Relation): 
+    "Does x belong to Rompus?"
+    def __init__(self, *args):  # seq of args
+        Relation.__init__(self, *args)
+
+class Liquid(Relation): 
+    "Is x liquid?"
+    def __init__(self, *args):  # seq of args
+        Relation.__init__(self, *args)
+
+class Zumpus(Relation): 
+    "Does x belong to Zumpus?"
+    def __init__(self, *args):  # seq of args
+        Relation.__init__(self, *args)
+
+# Variables
+Alex = Variable("Alex")
+
+# Rules
+
+checkp(A(x, Impl(Jompus(x), (Fruity(x)))), given)
+checkp(A(x,Impl(Jompus(x), Wumpus(x))), given)
+checkp(A(x,Impl(Wumpus(x), Not(Transparent(x)))), given)
+checkp(A(x,Impl(Wumpus(x), Tumpuses(x))), given)
+checkp(A(x,Impl(Tumpuses(x), Mean(x))), given)
+checkp(A(x,Impl(Tumpuses(x), Vumpuses(x))), given)
+checkp(A(x,Impl(Vumpuses(x), Cold(x))), given)
+checkp(A(x,Impl(Vumpuses(x), Yumpus(x))), given)
+checkp(A(x,Impl(Yumpus(x), Orange(x))), given)
+checkp(A(x,Impl(Yumpus(x), Numpus(x))), given)
+checkp(A(x,Impl(Numpus(x), Dull(x))), given)
+checkp(A(x,Impl(Numpus(x), Dumpus(x))), given)
+checkp(A(x,Impl(Dumpus(x), Not(Shy(x)))), given)
+checkp(A(x,Impl(Impuses(x), Shy(x))), given)
+checkp(A(x,Impl(Dumpus(x), Rompus(x))), given)
+checkp(A(x,Impl(Rompus(x), Liquid(x))), given)
+checkp(A(x,Impl(Rompus(x), Zumpus(x))), given)
+checkp(Tumpuses(Alex), given)
+
+# Goals
+checkp(Text("Goal: ~Shy(Alex)"), comment)
+checkp(Text("Negative Goal: Shy(Alex)"), comment)
+
+
+------
+Problem:
+[[PROBLEM]]
+Question:
+[[Question]]
+###
