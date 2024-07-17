@@ -34,10 +34,10 @@ class FlipWrapper:
 
     def _get_stdout(self):
         self.proc.expect(
-            [">>> ", "... ",pexpect.EOF]
+            [">>> ", "\.\.\. ",pexpect.EOF]
         )
         lines = self.proc.before.decode()
-        print("output: ", lines)
+            # print(f"output:--{lines}--")
         if lines.startswith("Traceback"):
             raise Exception("Error occurred during execution: \n" + lines)
             
@@ -61,10 +61,9 @@ class FlipWrapper:
         self._get_stdout()
         
         # catch the exception and throw an error
-        list_of_fol_statements.append("state()")
-        for line in list_of_fol_statements:
+        for line in list_of_fol_statements + ["state()"]:
             self.proc.sendline(line)
-            print(f"input:--{line}--")
+            # print(f"input:--{line}--")
             output = self._get_stdout()
         
         return output.replace('\r', '')
