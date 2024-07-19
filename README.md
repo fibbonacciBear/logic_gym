@@ -8,6 +8,6 @@ We use [FLiP](https://jon-jacky.github.io/FLiP/www/reference-nd.html) as a logic
 
 Gymnasium is an open source python library for developing and comparing reinforcement learning applications by providing a standard API to communicate between learning algorithms and environments. We will build a custom environment that wraps FLiP and provides a standard set of gymnasium interfaces that could be used by popular frameworks such as [Stable-Baselines3](https://stable-baselines3.readthedocs.io/en/master/), [coreRL](https://docs.cleanrl.dev/) and [RLlib](https://docs.ray.io/en/latest/rllib/index.html). We experiment with classic reinforcement learning algorithms such as PPO and DQN. In addition to this we would like to model reinforcement learning as a sequence to sequence modelling problem using LLMS similar to the work done in [decision transformers](https://arxiv.org/abs/2106.01345). 
 
-We are interested in exploring, while using decision transformers to solve the RL problem, how small the language model can be and still continue solving first order logic problems. 
+We are interested in using decision transformers to solve the RL problem. While using decision transformers, we would like to see how small the language model can be made and still continue solving first order logic problems. 
 
 
