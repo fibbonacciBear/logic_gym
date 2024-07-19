@@ -3,7 +3,7 @@ Flip Wrapper
 ================
 """
 
-from typing import Optional, Tuple
+from typing import Optional, Tuple, List
 import pexpect
 import sys
 from dotenv import load_dotenv
