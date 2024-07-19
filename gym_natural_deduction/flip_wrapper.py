@@ -11,20 +11,16 @@ import os
 
 load_dotenv()  # take environment variables from .env.
 
-FLIP_HOME = (os.getenv("FLIP_HOME"),)
-
-# set sys.path to include the directory containing the FLiP module
-sys.path.append(f"{FLIP_HOME}")
-sys.path.append(f"{FLIP_HOME}/logic")
-sys.path.append(f"{FLIP_HOME}/poset")
-
+PYTHON_BINARY = os.getenv("PYTHON_BINARY")
+FLIP_HOME = os.getenv("FLIP_HOME")
+PYTHONPATH = f"{FLIP_HOME}:{FLIP_HOME}/logic:{FLIP_HOME}/poset"
 
 class FlipWrapper:
     """
     Wrapper for FliP.
     """
 
-    def __init__(self, binary_path: str = "python"):
+    def __init__(self, binary_path: str = PYTHON_BINARY):
         """
         Initialize the wrapper.
         """
@@ -69,6 +65,7 @@ class FlipWrapper:
         self._proc = pexpect.spawn(
             f"{self.binary_path} {self.command_line_arguments} ",
             echo=False,
+            env={"PYTHONPATH": PYTHONPATH},
         )
         self._proc.delaybeforesend = None  # Disable delay before sending
 

@@ -10,4 +10,14 @@ Gymnasium is an open source python library for developing and comparing reinforc
 
 We are interested in using decision transformers to solve the RL problem. While using decision transformers, we would like to see how small the language model can be made and still continue solving first order logic problems (in similar lines along [TinyStories investigation](https://arxiv.org/pdf/2305.07759)).
 
+## Get started:
+
+Create a .env file with the following environment variables, adjust to match your environment.
+
+```shell
+OPEN_AI_API_KEY=<your-openai-api-key>
+FLIP_HOME=/Users/akashganesan/anaconda3/envs/drlzh/lib/python3.11/site-packages/flip
+PYTHON_BINARY=/Users/akashganesan/anaconda3/envs/drlzh/bin/python
+```
+
 
