@@ -53,7 +53,7 @@ class FlipWrapper:
             list_of_fol_statements (List[str]): A list of FOL statements to be sent to the FLiP process.
 
         Returns:
-            str: The output received from the FLiP process.
+            str: returns state of the FLiP process.
 
         Raises:
             ValueError: If the FLiP process is already running.
