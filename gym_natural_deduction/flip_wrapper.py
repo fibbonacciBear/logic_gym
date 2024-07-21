@@ -41,7 +41,7 @@ class FlipWrapper:
         self.proc.expect([">>> ", "\.\.\. ", pexpect.EOF])
         lines = self.proc.before.decode()
         # print(f"output:--{lines}--")
-        if lines.startswith("Traceback"):
+        if lines.startswith("Traceback") or lines.startswith("Apply()"):
             raise Exception("Error occurred during execution: \n" + lines)
         return lines
 
@@ -104,6 +104,9 @@ class FlipWrapper:
         goal = goal_line.split(" ")[0]
         lines = [line for line in lines if line != ""]
         last_state = lines[-1].split(" ")[0]
+        
+        if lines[-1].endswith("Goal"):
+            return "unknown"
 
         if last_state == goal:
             return "true"
@@ -144,3 +147,10 @@ class FlipWrapper:
         if self._proc is not None:
             self._proc.terminate()
             self._proc.wait()
+            
+    def get_state_using_pp(self) -> str:
+        """
+        Get the current state using the pp() function.
+        """
+        self.proc.sendline("pp()")
+        return self._get_stdout().replace("\r", "")
