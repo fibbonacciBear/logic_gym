@@ -1,3 +1,4 @@
+
 # Natural Deduction Solver for First Order Logic
 
 There are many first order logic solvers available such as Vampire, E, iProver, ect. However all of them are [saturation based provers](https://www.sciencedirect.com/science/article/pii/S0168007222000823). Our goal is to develop a natural deduction based prover which produces explainable proof steps and mirrors human based thinking. To do this, we will be exploring learning an algorithm via reinforcement learning to solve the problem rather than explicitly coding it. 
@@ -20,4 +21,12 @@ FLIP_HOME=/Users/akashganesan/anaconda3/envs/drlzh/lib/python3.11/site-packages/
 PYTHON_BINARY=/Users/akashganesan/anaconda3/envs/drlzh/bin/python
 ```
 
+## Installation
+
+To install your new environment, run the following commands:
+
+```{shell}
+cd logic_gym
+pip install -e .
+```
 

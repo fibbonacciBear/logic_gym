@@ -1,0 +1,27 @@
+# Predicates
+class WarmBlooded(Relation):
+    "Is x warm-blooded?"
+    def __init__(self, *args):  # seq of args
+        Relation.__init__(self, *args)
+
+
+class Mammal(Relation):
+    "Does x belong to Mammal?"
+    def __init__(self, *args):  # seq of args
+        Relation.__init__(self, *args)
+
+
+# Variables
+Sally = Variable("Sally")
+
+# Rules
+checkp(Text("Sample problem as FliP FOL statements"), comment)
+checkp(A(x, Impl(Mammal(x), WarmBlooded(x))), given)
+checkp(Mammal(Sally), given)
+
+# Goals
+checkp(WarmBlooded(Sally), goal)
+
+# Proof
+# rapply(Ae, 1, Sally)
+# rapply(imple, 4, 2)

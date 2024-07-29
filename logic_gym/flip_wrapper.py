@@ -73,7 +73,7 @@ class FlipWrapper:
         self._get_stdout()
 
         # Send each FOL statement to the FLiP process and get the output
-        for line in list_of_fol_statements + ["state()"]:
+        for line in list_of_fol_statements + ["hstate()"]:
             self.proc.sendline(line)
             output = self._get_stdout()
 
@@ -92,8 +92,9 @@ class FlipWrapper:
                 - "false" if the last state is equal to "F".
                 - "unknown" if the last state is neither equal to the goal state nor "F".
         """
-        lines = state.split("\n")
+        lines = state.split("\r\n")
         goal_line = ""
+
 
         for line in lines:
             line = line.strip()
@@ -123,15 +124,17 @@ class FlipWrapper:
         self.proc.sendline(fol_statement)
         self._get_stdout()
 
-        self.proc.sendline("state()")
+        self.proc.sendline("hstate()")
         state = self._get_stdout()
 
         self.proc.sendline("pp()")
         pp_state = self._get_stdout()
 
         goal_state = self._get_goal_state(pp_state)
+        
 
         return goal_state, state.replace("\r", "")
+    
 
     @property
     def proc(self) -> pexpect.spawn:
