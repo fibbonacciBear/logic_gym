@@ -132,8 +132,8 @@ checkp(A(x,Impl(Rompus(x), Zumpus(x))), given)
 checkp(Tumpuses(Alex), given)
 
 # Goals
-checkp(Text("Goal: ~Shy(Alex)"), comment)
-checkp(Text("Negative Goal: Shy(Alex)"), comment)
+checkp(~Shy(Alex), goal)
+
 
 
 ------

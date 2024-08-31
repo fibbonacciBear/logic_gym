@@ -4,7 +4,7 @@ import numpy as np
 import string
 
 from gymnasium.spaces import Text, MultiDiscrete
-from logic_gym.flip_wrapper import FlipWrapper
+from logic_gym.flip_executor import FlipWrapper
 
 
 class Rules(Enum):
@@ -15,13 +15,13 @@ class Rules(Enum):
 
 class LogicGymEnv(gym.Env):
     metadata = {"render_modes": ["human", "ansi"], "render_fps": 1}
-    max_proof_length = 8
+    max_proof_length = 16
     MAX_OBSERVATION_LENGTH = 1000
     reset_count = 0
     terminated_count = 0
     truncated_count = 0
 
-    def __init__(self, render_mode=None, max_proof_length=8, max_steps=32):
+    def __init__(self, render_mode=None, max_proof_length=max_proof_length, max_steps=32):
 
         self.max_proof_length = max_proof_length
         self.current_proof_length_zero_indexed = -1
@@ -119,6 +119,7 @@ class LogicGymEnv(gym.Env):
         flip_statement = self._action_to_flip_statement(action)
 
         if self._stats_steps >= self.max_steps:
+            self.truncated_count += 1
             self.truncated = True
 
         if flip_statement is None:
@@ -149,12 +150,15 @@ class LogicGymEnv(gym.Env):
         if not goal_state == "unknown":
             reward = 1
             self.terminated = True
+            self.terminated_count += 1
 
         if (
             not self.terminated
             and self.current_proof_length_zero_indexed >= self.max_proof_length
         ):
             self.truncated = True
+            self.truncated_count += 1
+
 
         return (
             self.observation,
@@ -168,7 +172,7 @@ class LogicGymEnv(gym.Env):
         """
         Set the maximum premise index.
         """
-        self.current_proof_length_zero_indexed = len(self.observation.split("\n")) - 1
+        self.current_proof_length_zero_indexed = len(self.observation.split("\n")) - 2
 
     def close(self):
         self._flip_wrapper.terminate()
@@ -177,7 +181,12 @@ class LogicGymEnv(gym.Env):
         return self._state
 
     def get_stats(self):
-        return self._stats_steps
+        return {
+            "reset_count": self.reset_count,
+            "terminated_count": self.terminated_count,
+            "truncated_count": self.truncated_count,
+            "steps": self._stats_steps,
+        }
 
     def action_masks(self):
         return (

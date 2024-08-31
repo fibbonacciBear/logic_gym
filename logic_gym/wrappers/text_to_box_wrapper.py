@@ -14,9 +14,9 @@ class TextToBoxWrapper(gym.ObservationWrapper):
         self.vocab = (
             string.ascii_letters + string.digits + string.punctuation + " " + "\n"
         )
-        self.observation_space = Box(low=0, high=np.inf, shape=(768,), dtype=np.int32)
+        self.observation_space = Box(low=0, high=len(self.vocab), shape=(MAX_OBSERVATION_LENGTH,), dtype=np.int32)
 
     def observation(self, obs):
         assert len(obs) <= MAX_OBSERVATION_LENGTH
-        obs = obs.ljust(768, " ")
+        obs = obs.ljust(MAX_OBSERVATION_LENGTH, " ")
         return np.array([self.vocab.index(char) for char in obs])
