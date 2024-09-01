@@ -23,6 +23,19 @@ PYTHON_BINARY=/Users/akashganesan/anaconda3/envs/drlzh/bin/python
 
 ## Installation
 
+Create a conda environment:
+```{shell}
+conda create --name fol  -c conda-forge python=3.11
+conda activate fol
+```
+
+Install Flip:
+```{shell}
+git clone https://github.com/fibbonacciBear/FLiP
+cd FLiP
+pip install -e .
+```
+
 To install your new environment, run the following commands:
 
 ```{shell}
