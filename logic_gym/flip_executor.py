@@ -15,7 +15,7 @@ PYTHON_BINARY = os.getenv("PYTHON_BINARY")
 FLIP_HOME = os.getenv("FLIP_HOME")
 PYTHONPATH = f"{FLIP_HOME}:{FLIP_HOME}/logic:{FLIP_HOME}/poset"
 
-class FlipWrapper:
+class FlipExecutor:
     """
     Wrapper for FliP.
     """
@@ -60,8 +60,8 @@ class FlipWrapper:
         """
         if self._proc is not None:
             self._proc.close()
-
-        # Start the FLiP process
+            
+                # Start the FLiP process
         self._proc = pexpect.spawn(
             f"{self.binary_path} {self.command_line_arguments} ",
             echo=False,
@@ -78,6 +78,29 @@ class FlipWrapper:
             output = self._get_stdout()
 
         return output.replace("\r", "")
+    
+            
+            
+    def reset(self, list_of_fol_statements: List[str]) -> str:
+        self.proc.sendline("clear()")
+        self._get_stdout()
+        for fol_statement in list_of_fol_statements:
+            self.proc.sendline(fol_statement)
+            self._get_stdout()
+
+        self.proc.sendline("hstate()")
+        state = self._get_stdout()
+
+        self.proc.sendline("pp()")
+        pp_state = self._get_stdout()
+
+        goal_state = self._get_goal_state(pp_state)
+        
+
+        return goal_state, state.replace("\r", "")
+
+
+    
 
     def _get_goal_state(self, state: str) -> str:
         """

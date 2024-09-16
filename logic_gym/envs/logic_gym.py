@@ -1,10 +1,11 @@
+import copy
 from enum import Enum
 import gymnasium as gym
 import numpy as np
 import string
 
 from gymnasium.spaces import Text, MultiDiscrete
-from logic_gym.flip_executor import FlipWrapper
+from logic_gym.flip_executor import FlipExecutor
 
 
 class Rules(Enum):
@@ -21,17 +22,26 @@ class LogicGymEnv(gym.Env):
     terminated_count = 0
     truncated_count = 0
 
-    def __init__(self, render_mode=None, max_proof_length=max_proof_length, max_steps=32):
+    def __init__(
+        self, render_mode=None, max_proof_length=max_proof_length, max_steps=32
+    ):
 
         self.max_proof_length = max_proof_length
-        self.current_proof_length_zero_indexed = -1
-        self._stats_steps = 0
         self.max_steps = max_steps
 
+        self.current_proof_length_zero_indexed = -1
+        self._stats_steps = 0
+        self._info = {"bad_action": False}
+        
+        
         # Define the observation space
         vocab = string.ascii_letters + string.digits + string.punctuation + " " + "\n"
-        self.observation_space = Text(min_length=0, max_length=self.MAX_OBSERVATION_LENGTH, charset=vocab)
+        self.observation_space = Text(
+            min_length=0, max_length=self.MAX_OBSERVATION_LENGTH, charset=vocab
+        )
         self.observation = ""
+        
+        self.executed_flip_statements = []
 
         # Define the action space
         self.action_space = MultiDiscrete(
@@ -40,18 +50,22 @@ class LogicGymEnv(gym.Env):
 
         self.truncated = False
         self.terminated = False
-        self._state = ""
+        self._pp_state = ""
 
         assert render_mode is None or render_mode in self.metadata["render_modes"]
         self.render_mode = render_mode
 
         # Initialize the FLiP wrapper
-        self._flip_wrapper = FlipWrapper()
+        self._flip_wrapper = FlipExecutor()
         with open("logic_gym/default_task.txt", "r") as file:
             self._task = file.read()
+        try:
+            self._flip_wrapper.start([])
+        except:
+            raise Exception("Error in starting the FLiP process")
 
     def _get_info(self) -> dict:
-        return {}
+        return self._info
 
     def set_task(self, task: str) -> None:
         """
@@ -71,6 +85,52 @@ class LogicGymEnv(gym.Env):
         """
         return self._task
 
+    def get_state(self) -> dict:
+        """
+        Returns the state for the Logic Gym environment.
+        Returns:
+            str: The state for the Logic Gym environment.
+        """
+        # self.current_proof_length_zero_indexed
+        # self._stats_steps
+        # self._info
+        # self.observation = ""
+        # self.truncated = False
+        # self.terminated = False
+        # self._state = ""
+
+        return {
+            "current_proof_length_zero_indexed": self.current_proof_length_zero_indexed,
+            "stats_steps": self._stats_steps,
+            "info": copy.deepcopy(self._info),
+            "observation":  copy.deepcopy(self.observation),
+            "truncated": self.truncated,
+            "terminated": self.terminated,
+            "state":  copy.deepcopy(self._pp_state),
+            "executed_flip_statements":  copy.deepcopy(self.executed_flip_statements),
+        }
+
+    def set_state(self, state: dict) -> None:
+        """
+        Set the state for the Logic Gym environment.
+        Parameters:
+        - state (str): The state to be set for the environment.
+        Returns:
+        - None
+        """
+        self.current_proof_length_zero_indexed = state["current_proof_length_zero_indexed"]
+        self._stats_steps = state["stats_steps"]
+        self._info = state["info"]
+        self.observation = state["observation"]
+        self.truncated = state["truncated"]
+        self.terminated = state["terminated"]
+        self._pp_state = state["state"]
+        self.executed_flip_statements = state["executed_flip_statements"]
+        try:
+            self._flip_wrapper.reset( self.get_task().split("\n") + self.executed_flip_statements)
+        except:
+            raise Exception("Error in setting the state")
+
     def reset(self, seed=None, options=None):
         # We need the following line to seed self.np_random
         super().reset(seed=seed)
@@ -80,11 +140,12 @@ class LogicGymEnv(gym.Env):
         self.truncated = False
         self._stats_steps = 0
         self.reset_count += 1
+        self._info = {"bad_action": False}
 
         try:
-            self.observation = self._flip_wrapper.start(axioms_list)
+            _, self.observation = self._flip_wrapper.reset(axioms_list)
             self._set_max_premise_index()
-            self._state = self._flip_wrapper.get_state_using_pp()
+            self._pp_state = self._flip_wrapper.get_state_using_pp()
         except:
             raise Exception("Error in setting the task")
 
@@ -123,6 +184,7 @@ class LogicGymEnv(gym.Env):
             self.truncated = True
 
         if flip_statement is None:
+            self._info = {"bad_action": True}
             return (
                 self.observation,
                 reward,
@@ -131,13 +193,13 @@ class LogicGymEnv(gym.Env):
                 self._get_info(),
             )
         try:
-
             goal_state, self.observation = self._flip_wrapper.run_proof_step(
                 flip_statement
             )
-            self._state = self._flip_wrapper.get_state_using_pp()
-
+            self._pp_state = self._flip_wrapper.get_state_using_pp()
+            self.executed_flip_statements.append(flip_statement)
         except:
+            self._info = {"bad_action": True}
             return (
                 self.observation,
                 reward,
@@ -159,7 +221,6 @@ class LogicGymEnv(gym.Env):
             self.truncated = True
             self.truncated_count += 1
 
-
         return (
             self.observation,
             reward,
@@ -178,7 +239,7 @@ class LogicGymEnv(gym.Env):
         self._flip_wrapper.terminate()
 
     def get_state_for_humans(self):
-        return self._state
+        return self._pp_state
 
     def get_stats(self):
         return {
