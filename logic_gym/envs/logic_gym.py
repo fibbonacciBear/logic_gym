@@ -3,6 +3,7 @@ from enum import Enum
 import gymnasium as gym
 import numpy as np
 import string
+import random
 
 from gymnasium.spaces import Text, MultiDiscrete
 from logic_gym.flip_executor import FlipExecutor
@@ -28,6 +29,8 @@ class LogicGymEnv(gym.Env):
 
         self.max_proof_length = max_proof_length
         self.max_steps = max_steps
+        self.max_variables = 1
+        self.variables = []
 
         self.current_proof_length_zero_indexed = -1
         self._stats_steps = 0
@@ -120,12 +123,12 @@ class LogicGymEnv(gym.Env):
         """
         self.current_proof_length_zero_indexed = state["current_proof_length_zero_indexed"]
         self._stats_steps = state["stats_steps"]
-        self._info = state["info"]
-        self.observation = state["observation"]
+        self._info = copy.deepcopy(state["info"])
+        self.observation = copy.deepcopy(state["observation"])
         self.truncated = state["truncated"]
         self.terminated = state["terminated"]
-        self._pp_state = state["state"]
-        self.executed_flip_statements = state["executed_flip_statements"]
+        self._pp_state = copy.deepcopy(state["state"])
+        self.executed_flip_statements = copy.deepcopy(state["executed_flip_statements"])
         try:
             self._flip_wrapper.reset( self.get_task().split("\n") + self.executed_flip_statements)
         except:
@@ -140,6 +143,7 @@ class LogicGymEnv(gym.Env):
         self.truncated = False
         self._stats_steps = 0
         self.reset_count += 1
+        self.variables = self.get_variables(axioms_list)
         self._info = {"bad_action": False}
 
         try:
@@ -159,7 +163,7 @@ class LogicGymEnv(gym.Env):
         variable = action[3]
 
         ## TODO: Add support for multiple variables
-        variable_name = "Sally"
+        variable_name = self.variables[variable]
 
         if rule == Rules.Ae:
             move = f"rapply({rule.name}, {premise1}, {variable_name})"
@@ -237,6 +241,14 @@ class LogicGymEnv(gym.Env):
 
     def close(self):
         self._flip_wrapper.terminate()
+        
+        
+    def get_variables(self, axioms_list):
+        variables = []
+        for axiom in axioms_list:
+            if "Variable(" in axiom:
+                variables.append(axiom.split(" = ")[0])
+        return variables
 
     def get_state_for_humans(self):
         return self._pp_state
@@ -248,6 +260,26 @@ class LogicGymEnv(gym.Env):
             "truncated_count": self.truncated_count,
             "steps": self._stats_steps,
         }
+        
+    def get_all_actions(self):
+        actions_one_two =  [
+            [rule, premise1, premise2, variable]
+            for rule in range(1, len(Rules))
+            for premise1 in range(self.max_proof_length)
+            for premise2 in range(self.max_proof_length)
+            for variable in range(self.max_variables)
+        ]
+        
+        actions_zero = [
+            [0, premise1, 0, variable]
+            for premise1 in range(self.max_proof_length)
+            for variable in range(self.max_variables)
+        ]
+        
+        actions = actions_zero + actions_one_two
+        
+        random.shuffle(actions)
+        return actions
 
     def action_masks(self):
         return (
