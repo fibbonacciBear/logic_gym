@@ -35,15 +35,14 @@ class LogicGymEnv(gym.Env):
         self.current_proof_length_zero_indexed = -1
         self._stats_steps = 0
         self._info = {"bad_action": False}
-        
-        
+
         # Define the observation space
         vocab = string.ascii_letters + string.digits + string.punctuation + " " + "\n"
         self.observation_space = Text(
             min_length=0, max_length=self.MAX_OBSERVATION_LENGTH, charset=vocab
         )
         self.observation = ""
-        
+
         self.executed_flip_statements = []
 
         # Define the action space
@@ -106,14 +105,19 @@ class LogicGymEnv(gym.Env):
             "current_proof_length_zero_indexed": self.current_proof_length_zero_indexed,
             "stats_steps": self._stats_steps,
             "info": copy.deepcopy(self._info),
-            "observation":  copy.deepcopy(self.observation),
+            "observation": copy.deepcopy(self.observation),
             "truncated": self.truncated,
             "terminated": self.terminated,
-            "state":  copy.deepcopy(self._pp_state),
-            "executed_flip_statements":  copy.deepcopy(self.executed_flip_statements),
+            "state": copy.deepcopy(self._pp_state),
+            "executed_flip_statements": copy.deepcopy(self.executed_flip_statements),
         }
 
-    def set_state(self, state: dict) -> None:
+    def set_state(
+        self,
+        state: dict,
+        restore_flip_state: bool = True,
+        step_back_to_restore: bool = False,
+    ) -> None:
         """
         Set the state for the Logic Gym environment.
         Parameters:
@@ -121,7 +125,9 @@ class LogicGymEnv(gym.Env):
         Returns:
         - None
         """
-        self.current_proof_length_zero_indexed = state["current_proof_length_zero_indexed"]
+        self.current_proof_length_zero_indexed = state[
+            "current_proof_length_zero_indexed"
+        ]
         self._stats_steps = state["stats_steps"]
         self._info = copy.deepcopy(state["info"])
         self.observation = copy.deepcopy(state["observation"])
@@ -129,10 +135,17 @@ class LogicGymEnv(gym.Env):
         self.terminated = state["terminated"]
         self._pp_state = copy.deepcopy(state["state"])
         self.executed_flip_statements = copy.deepcopy(state["executed_flip_statements"])
-        try:
-            self._flip_wrapper.reset( self.get_task().split("\n") + self.executed_flip_statements)
-        except:
-            raise Exception("Error in setting the state")
+
+        if not step_back_to_restore:
+            try:
+                self._flip_wrapper.reset(
+                    self.get_task().split("\n") + self.executed_flip_statements
+                )
+            except:
+                raise Exception("Error in setting the state")
+        else:
+            if restore_flip_state:
+                self._pp_state = self._flip_wrapper.run_proof_step("back()")
 
     def reset(self, seed=None, options=None):
         # We need the following line to seed self.np_random
@@ -241,8 +254,7 @@ class LogicGymEnv(gym.Env):
 
     def close(self):
         self._flip_wrapper.terminate()
-        
-        
+
     def get_variables(self, axioms_list):
         variables = []
         for axiom in axioms_list:
@@ -260,26 +272,37 @@ class LogicGymEnv(gym.Env):
             "truncated_count": self.truncated_count,
             "steps": self._stats_steps,
         }
-        
+
     def get_all_actions(self):
-        actions_one_two =  [
+        actions_one_two = [
             [rule, premise1, premise2, variable]
             for rule in range(1, len(Rules))
             for premise1 in range(self.max_proof_length)
             for premise2 in range(self.max_proof_length)
             for variable in range(self.max_variables)
         ]
-        
+
         actions_zero = [
             [0, premise1, 0, variable]
             for premise1 in range(self.max_proof_length)
             for variable in range(self.max_variables)
         ]
-        
+
         actions = actions_zero + actions_one_two
-        
+
         random.shuffle(actions)
         return actions
+
+    def step_and_step_back(self, action):
+        current_state = self.get_state()
+        observation, reward, terminated, truncated, info = self.step(action)
+        next_state = self.get_state()
+        self.set_state(
+            current_state,
+            restore_flip_state=not info["bad_action"],
+            step_back_to_restore=True,
+        )
+        return observation, reward, terminated, truncated, info, next_state
 
     def action_masks(self):
         return (

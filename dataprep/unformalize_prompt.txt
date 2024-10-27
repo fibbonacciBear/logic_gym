@@ -134,7 +134,7 @@ checkp(Tumpuses(Alex), given)
 # Goals
 checkp(Not(Shy(Alex)), goal)
 
-
+# Proof
 
 ------
 Problem:
